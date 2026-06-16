@@ -7,6 +7,19 @@ from services.pet_service import advance_pet
 bp = Blueprint("achievements", __name__)
 
 
+# borra todos los datos de Redis: logros, mascota y contadores / deletes all Redis data: achievements, pet and counters
+@bp.route("/reset")
+def reset():
+    r.delete("muro_logros")
+    r.delete("mascota_tipo")
+    r.delete("mascota_progreso")
+    r.delete("mascota_completadas_planta")
+    r.delete("mascota_completadas_panda")
+    r.delete("mascota_completadas_perro")
+    r.delete("mascota_completadas_gato")
+    return redirect("/")
+
+
 # edita el texto de un logro o proceso existente / edits the text of an existing achievement or process
 @bp.route("/editar", methods=["POST"])
 def edit():

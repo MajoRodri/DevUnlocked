@@ -368,7 +368,39 @@ La barra muestra los puntos acumulados (0/10). Al llegar a 10, aparece la animac
 
 La mascota solo se puede cambiar cuando se completa (10 puntos), para mantener la mecánica de juego.
 
+### Resetear todos los datos
+
+Visita `http://localhost/reset` en el navegador. Borra todos los logros, el estado de la mascota y los contadores de completadas. Útil para empezar de cero.
+
 </details>
+
+---
+
+## Capturas
+
+<details>
+<summary><strong>Ver capturas</strong></summary>
+
+**App en el navegador**
+![App](app/docs/AppDev.png)
+
+**docker compose ps**
+![Docker Compose PS](app/docs/Composedev.png)
+
+**redis-cli KEYS ***
+![Redis KEYS](app/docs/KeysDev.png)
+
+</details>
+
+---
+
+## Qué aprendí
+
+- **El DNS interno de Docker** — dentro de una red Docker Compose, los contenedores se comunican por el nombre del servicio, no por `localhost`. Intentar conectar a `localhost:6379` desde el contenedor Flask falla porque `localhost` apunta al propio contenedor, no a Redis.
+- **El orden importa en el Dockerfile** — copiar `requirements.txt` antes que el código fuente permite que Docker cachee la capa de dependencias. Si solo cambia el código, `pip install` no se vuelve a ejecutar, lo que hace los builds mucho más rápidos.
+- **`service_healthy` vs `depends_on` simple** — `depends_on` solo espera a que el contenedor arranque, no a que el servicio dentro esté listo. Con `condition: service_healthy` y un healthcheck en Redis, Flask espera a que Redis realmente responda antes de intentar conectarse.
+- **Volúmenes con nombre vs bind mounts** — un volumen con nombre (`datos_redis:/data`) persiste entre `docker compose down` y `docker compose up`. Solo se borra al usar `-v`. Esto garantiza que los datos sobreviven a reinicios.
+- **Nginx como única puerta de entrada** — al no exponer el puerto 5000 de Flask al host, el usuario nunca habla directamente con la app. Todo pasa por Nginx, que actúa como proxy inverso, replicando el comportamiento de un entorno de producción real.
 
 ---
 
