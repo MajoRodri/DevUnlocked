@@ -1,0 +1,26 @@
+<div class="completadas-wrap">
+  {% if completadas.planta > 0 %}
+  <div class="completadas-badge" title="Plantas completadas">
+    <span class="completadas-icon">🌱</span>
+    <span class="completadas-num">{{ completadas.planta }}</span>
+  </div>
+  {% endif %}
+  {% if completadas.panda > 0 %}
+  <div class="completadas-badge" title="Pandas completados">
+    <span class="completadas-icon">🐼</span>
+    <span class="completadas-num">{{ completadas.panda }}</span>
+  </div>
+  {% endif %}
+  {% if completadas.perro > 0 %}
+  <div class="completadas-badge" title="Perros completados">
+    <span class="completadas-icon">🐶</span>
+    <span class="completadas-num">{{ completadas.perro }}</span>
+  </div>
+  {% endif %}
+  {% if completadas.gato > 0 %}
+  <div class="completadas-badge" title="Gatos completados">
+    <span class="completadas-icon">🐱</span>
+    <span class="completadas-num">{{ completadas.gato }}</span>
+  </div>
+  {% endif %}
+</div>

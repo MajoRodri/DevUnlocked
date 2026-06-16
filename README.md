@@ -1,0 +1,473 @@
+<p align="center">
+  <img src="app/docs/devunlocked_logo.png" alt="DevUnlocked Logo" width="180" />
+</p>
+
+# DevUnlocked 🔓
+
+**DevUnlocked** es una aplicación web gamificada para que desarrolladores (o cualquier persona) registren sus logros y procesos de aprendizaje de forma motivadora. Cada logro que publicas hace crecer a tu mascota virtual, y cuando tu compañero llega al nivel máximo, ¡se completa y puedes elegir uno nuevo!
+
+---
+
+## Demo
+
+<!-- demo video -->
+
+---
+
+## Características
+
+- **Muro de victorias** — publica logros puntuales o procesos en curso que aparecen en un tablero compartido.
+- **Mascota virtual** — elige entre cuatro compañeros (🌱 Planta, 🐼 Panda, 🐶 Perro, 🐱 Gato) que evolucionan visualmente en 5 etapas.
+- **Sistema de progreso** — cada logro publicado suma 1 punto a tu mascota. Al llegar a 10 puntos, tu compañero se completa y puedes elegir uno nuevo.
+- **Procesos con niveles** — los procesos en curso se clasifican en `Bajo`, `Medio`, `Medio avanzado` o `Avanzado`, y puedes actualizar su nivel en cualquier momento.
+- **Celebraciones animadas** — fuegos artificiales y mensajes motivadores al publicar un logro o subir de nivel.
+- **Contador de completadas** — badges que muestran cuántas veces has completado cada mascota.
+- **Persistencia con Redis** — toda la información se guarda en Redis, lo que garantiza velocidad y bajo consumo de recursos.
+
+---
+
+## Stack tecnológico
+
+| Capa        | Tecnología                         |
+|-------------|-------------------------------------|
+| Backend     | Python 3.11 + Flask                 |
+| Base de datos | Redis 7                           |
+| Servidor web | Nginx (proxy inverso)              |
+| Frontend    | HTML5 + CSS3 + JavaScript vanilla   |
+| Contenedores | Docker + Docker Compose            |
+| Imagen publicada | [majorodri/devunlocked](https://hub.docker.com/repository/docker/majorodri/devunlocked/general) (`v1`) |
+
+---
+
+<details>
+<summary><strong>Cómo funciona</strong></summary>
+
+```
+Usuario publica un logro
+        │
+        ▼
+Flask recibe el formulario → guarda el logro en Redis (lista "muro_logros")
+        │
+        ▼
+Si es un "logro": progreso de la mascota +1
+Si es un "proceso llegando a Avanzado": progreso de la mascota +1
+        │
+        ▼
+¿Progreso == 10?
+  Sí → mascota completada, contador +1, progreso vuelve a 0
+  No → continúa normalmente
+        │
+        ▼
+Redirección a "/" con parámetros de query → JavaScript muestra animación
+```
+
+</details>
+
+---
+
+<details>
+<summary><strong>Estructura del proyecto</strong></summary>
+
+```
+DevUnlocked/
+├── app/
+│   ├── Dockerfile              # imagen de la aplicación Flask
+│   ├── app.py                  # punto de entrada, registra blueprints
+│   ├── config.py               # constantes: niveles y nombres de etapas
+│   ├── extensions.py           # conexión a Redis
+│   ├── requirements.txt        # dependencias Python
+│   ├── routes/
+│   │   ├── main.py             # GET / — página principal
+│   │   ├── achievements.py     # POST /añadir, POST /actualizar-nivel
+│   │   └── pets.py             # POST /elegir-mascota
+│   ├── services/
+│   │   ├── pet_service.py      # lógica de progreso y estado de mascota
+│   │   └── achievement_service.py  # parseo de logros desde Redis
+│   ├── templates/
+│   │   ├── base.html           # layout base
+│   │   ├── index.html          # página principal
+│   │   └── components/
+│   │       ├── badges.html     # contador de mascotas completadas
+│   │       ├── form_card.html  # formulario para publicar
+│   │       ├── modal.html      # modal para elegir mascota
+│   │       ├── pet_card.html   # barra de progreso y etapa actual
+│   │       ├── wall.html       # muro de logros
+│   │       └── pets/           # SVGs animados de cada mascota por etapa
+│   │           ├── plant.html
+│   │           ├── panda.html
+│   │           ├── dog.html
+│   │           └── cat.html
+│   └── static/
+│       ├── style.css
+│       └── js/
+│           ├── main.js         # lógica de entrada: detecta parámetros y activa efectos
+│           ├── celebration.js  # mensajes motivadores aleatorios
+│           ├── fireworks.js    # animación de fuegos artificiales con Canvas
+│           ├── modal.js        # apertura del modal de elección de mascota
+│           └── tabs.js         # cambio entre pestaña "Logro" y "En proceso"
+├── nginx/
+│   └── nginx.conf              # proxy inverso apuntando a Flask en el puerto 5000
+├── .env                        # variables de entorno (REDIS_HOST, REDIS_PORT)
+├── docker-compose.yml          # orquestación de los tres servicios
+└── requirements.txt            # dependencias Python (espejo del de /app)
+```
+
+</details>
+
+---
+
+## Instalación
+
+### Requisitos previos
+
+<details>
+<summary>Docker (recomendado)</summary>
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) versión 24 o superior
+- [Docker Compose](https://docs.docker.com/compose/) (incluido en Docker Desktop)
+- Puerto **80** disponible en tu máquina
+
+</details>
+
+<details>
+<summary>Local sin Docker</summary>
+
+- Python 3.11 o superior
+- Redis 7 instalado y corriendo en `localhost:6379`
+- Puerto **5000** disponible
+
+</details>
+
+---
+
+<details>
+<summary><strong>Opción 1 — Docker Hub (sin clonar el repo)</strong></summary>
+
+La imagen está publicada en Docker Hub como `majorodri/devunlocked`. No necesitas el código fuente.
+
+**1. Crea un archivo `docker-compose.yml`:**
+
+```yaml
+services:
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - datos_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: majorodri/devunlocked:v1
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - web
+
+volumes:
+  datos_redis:
+    driver: local
+```
+
+**2. Crea el archivo `.env`:**
+
+```env
+REDIS_HOST=redis
+REDIS_PORT=6379
+```
+
+**3. Levanta los contenedores:**
+
+```bash
+docker compose up
+```
+
+**4.** Visita [http://localhost](http://localhost).
+
+**Para detener:**
+
+```bash
+docker compose down
+```
+
+> Los datos persisten entre reinicios. Para borrarlos: `docker compose down -v`
+
+</details>
+
+<details>
+<summary><strong>Opción 2 — Docker desde el código fuente</strong></summary>
+
+**1. Clona el repositorio:**
+
+```bash
+git clone https://github.com/MajoRodri/DevUnlocked.git
+cd DevUnlocked
+```
+
+**2. Verifica el archivo `.env`** en la raíz:
+
+```env
+REDIS_HOST=redis
+REDIS_PORT=6379
+```
+
+> `redis` es el nombre del servicio interno de Docker, no `localhost`.
+
+**3. Construye y levanta:**
+
+```bash
+docker compose up --build
+```
+
+**4.** Visita [http://localhost](http://localhost).
+
+**Para detener:**
+
+```bash
+docker compose down
+```
+
+> Para borrar datos: `docker compose down -v`
+
+</details>
+
+<details>
+<summary><strong>Opción 3 — Ejecución local sin Docker</strong></summary>
+
+**1. Clona el repositorio:**
+
+```bash
+git clone https://github.com/MajoRodri/DevUnlocked.git
+cd DevUnlocked
+```
+
+**2. Instala y levanta Redis localmente:**
+
+macOS:
+```bash
+brew install redis && brew services start redis
+```
+
+Ubuntu/Debian:
+```bash
+sudo apt install redis-server && sudo systemctl start redis
+```
+
+Windows: usa [Redis para Windows](https://github.com/microsoftarchive/redis/releases) o WSL.
+
+Verifica: `redis-cli ping` → debe responder `PONG`.
+
+**3. Crea y activa el entorno virtual:**
+
+```bash
+python -m venv venv
+
+# macOS / Linux:
+source venv/bin/activate
+
+# Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+```
+
+**4. Instala las dependencias:**
+
+```bash
+pip install -r requirements.txt
+```
+
+**5. Configura `.env`:**
+
+```env
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+**6. Corre la aplicación:**
+
+```bash
+cd app
+python app.py
+```
+
+**7.** Visita [http://localhost:5000](http://localhost:5000).
+
+</details>
+
+---
+
+<details>
+<summary><strong>Configuración — variables de entorno y claves Redis</strong></summary>
+
+Todas las variables se definen en `.env` en la raíz del proyecto.
+
+| Variable     | Valor por defecto | Descripción                                     |
+|--------------|-------------------|-------------------------------------------------|
+| `REDIS_HOST` | `redis`           | Host de Redis. Usa `localhost` sin Docker.      |
+| `REDIS_PORT` | `6379`            | Puerto de Redis. Raramente necesita cambiarse.  |
+
+**Claves almacenadas en Redis:**
+
+| Clave                          | Tipo   | Descripción                                  |
+|--------------------------------|--------|----------------------------------------------|
+| `muro_logros`                  | Lista  | Todos los logros/procesos en formato JSON    |
+| `mascota_tipo`                 | String | Mascota activa: `planta`, `panda`, `perro` o `gato` |
+| `mascota_progreso`             | String | Progreso actual de la mascota (0–10)         |
+| `mascota_completadas_planta`   | String | Veces que se completó la planta              |
+| `mascota_completadas_panda`    | String | Veces que se completó el panda               |
+| `mascota_completadas_perro`    | String | Veces que se completó el perro               |
+| `mascota_completadas_gato`     | String | Veces que se completó el gato                |
+
+</details>
+
+---
+
+<details>
+<summary><strong>Uso de la aplicación</strong></summary>
+
+### Publicar un logro
+
+1. Asegúrate de que la pestaña **"Logro"** esté activa.
+2. Escribe tu logro en el campo de texto.
+3. Haz clic en **"Publicar"**.
+4. Tu logro aparece en el muro, tu mascota gana 1 punto y se lanzan fuegos artificiales.
+
+### Registrar un proceso en curso
+
+1. Cambia a la pestaña **"En proceso"**.
+2. Escribe el proceso (ej: "Aprendiendo Docker").
+3. Selecciona el nivel inicial: `Bajo`, `Medio`, `Medio avanzado` o `Avanzado`.
+4. Haz clic en **"Publicar"**.
+
+### Actualizar el nivel de un proceso
+
+En el muro, usa el selector desplegable de la tarjeta para cambiar el nivel. El cambio se guarda al instante.
+
+> Subir a **Avanzado** también suma 1 punto de progreso a tu mascota.
+
+### Evolucionar tu mascota
+
+La barra muestra los puntos acumulados (0/10). Al llegar a 10, aparece la animación de celebración y puedes elegir una nueva mascota.
+
+### Cambiar de mascota manualmente
+
+La mascota solo se puede cambiar cuando se completa (10 puntos), para mantener la mecánica de juego.
+
+</details>
+
+---
+
+<details>
+<summary><strong>Solución de problemas</strong></summary>
+
+<details>
+<summary>La página no carga — "connection refused"</summary>
+
+**Causa:** Redis no está corriendo o no es accesible.
+
+- Con Docker: `docker compose ps` — el servicio `redis` debe mostrar `healthy`.
+- Sin Docker: `redis-cli ping` — debe responder `PONG`.
+
+</details>
+
+<details>
+<summary>Error al construir con Docker: <code>port 80 is already allocated</code></summary>
+
+Otro proceso usa el puerto 80. Cambia el puerto en `docker-compose.yml`:
+
+```yaml
+nginx:
+  ports:
+    - "8080:80"
+```
+
+Accede en [http://localhost:8080](http://localhost:8080).
+
+</details>
+
+<details>
+<summary>Los logros desaparecieron después de <code>docker compose down</code></summary>
+
+Si usaste `-v`, se eliminaron los volúmenes. Para detener sin perder datos usa siempre:
+
+```bash
+docker compose down
+```
+
+</details>
+
+<details>
+<summary>La mascota no aparece o muestra un estado incorrecto</summary>
+
+Conéctate a Redis y borra las claves:
+
+```bash
+# Con Docker:
+docker compose exec redis redis-cli
+
+# Sin Docker:
+redis-cli
+```
+
+```
+DEL mascota_tipo
+DEL mascota_progreso
+```
+
+Recarga la página — el modal de elección aparecerá de nuevo.
+
+</details>
+
+<details>
+<summary>Windows: <code>Activate.ps1 cannot be loaded because running scripts is disabled</code></summary>
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\venv\Scripts\Activate.ps1
+```
+
+</details>
+
+<details>
+<summary><code>ModuleNotFoundError: No module named 'flask'</code></summary>
+
+El entorno virtual no está activo o las dependencias no están instaladas.
+
+1. Activa el venv (debes ver `(venv)` al inicio de la línea).
+2. Ejecuta: `pip install -r requirements.txt`
+
+</details>
+
+<details>
+<summary>Error 405 Method Not Allowed</summary>
+
+Estás accediendo a una ruta POST directamente desde el navegador. Usa siempre los formularios de la interfaz.
+
+Rutas que solo aceptan `POST`:
+- `/añadir`
+- `/actualizar-nivel`
+- `/elegir-mascota`
+
+</details>
+
+<details>
+<summary>Los fuegos artificiales no se muestran</summary>
+
+- Verifica que JavaScript esté habilitado.
+- Prueba en modo incógnito para descartar extensiones.
+- La animación usa `requestAnimationFrame` y Canvas 2D — compatibles con todos los navegadores modernos.
+
+</details>
+
+</details>

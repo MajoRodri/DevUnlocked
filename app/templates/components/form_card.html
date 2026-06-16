@@ -1,0 +1,19 @@
+<div class="form-card">
+  <div class="tipo-tabs">
+    <button type="button" class="tab active" data-tipo="logro">🏆 Logro</button>
+    <button type="button" class="tab" data-tipo="proceso">⚙️ En proceso</button>
+  </div>
+  <form action="/añadir" method="POST">
+    <input type="hidden" name="tipo" id="tipo-input" value="logro" />
+    <textarea id="logro" name="logro" placeholder="Escribe tu logro del día..." required></textarea>
+    <div class="nivel-row" id="nivel-row">
+      <label for="nivel-select">Nivel inicial</label>
+      <select name="nivel" id="nivel-select">
+        {% for n in niveles %}
+        <option value="{{ n }}">{{ n | replace('-', ' ') | title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn-submit" type="submit">⚡ Publicar</button>
+  </form>
+</div>

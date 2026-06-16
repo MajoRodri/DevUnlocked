@@ -1,0 +1,22 @@
+<div class="mascota-card">
+  <div class="mascota-visual">
+    {% if mascota.tipo == 'planta' %}
+      {% include "components/pets/plant.html" %}
+    {% elif mascota.tipo == 'panda' %}
+      {% include "components/pets/panda.html" %}
+    {% elif mascota.tipo == 'perro' %}
+      {% include "components/pets/dog.html" %}
+    {% else %}
+      {% include "components/pets/cat.html" %}
+    {% endif %}
+  </div>
+  <div class="mascota-info">
+    <p class="mascota-stage-name">{{ mascota.stage_name }}</p>
+    <div class="mascota-progress-wrap">
+      <div class="mascota-bar-track">
+        <div class="mascota-bar-fill" style="width: {{ mascota.progreso * 10 }}%"></div>
+      </div>
+      <span class="mascota-count">{{ mascota.progreso }}/10</span>
+    </div>
+  </div>
+</div>

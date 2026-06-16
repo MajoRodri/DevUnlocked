@@ -1,0 +1,51 @@
+<div class="wall">
+  {% if logros %}
+    {% for logro in logros %}
+    <div class="card {% if logro.tipo == 'proceso' %}card-proceso{% endif %}">
+      <div class="card-top">
+        <span class="card-icon">{% if logro.tipo == 'proceso' %}⚙️{% else %}🏆{% endif %}</span>
+        {% if logro.tipo == 'proceso' %}
+        <span class="nivel-badge nivel-{{ logro.nivel }}">{{ logro.nivel | replace('-', ' ') | title }}</span>
+        {% endif %}
+      </div>
+
+      <p class="card-text">{{ logro.texto }}</p>
+
+      <form class="edit-form" action="/editar" method="POST">
+        <input type="hidden" name="index" value="{{ logro.index }}" />
+        <textarea name="texto" class="edit-textarea">{{ logro.texto }}</textarea>
+        <div class="edit-actions">
+          <button type="submit" class="btn-save">✓ Guardar</button>
+          <button type="button" class="btn-cancel">✕ Cancelar</button>
+        </div>
+      </form>
+
+      {% if logro.tipo == 'proceso' %}
+      <form action="/actualizar-nivel" method="POST" class="nivel-update-form">
+        <input type="hidden" name="index" value="{{ logro.index }}" />
+        <select name="nivel" class="nivel-select" onchange="this.form.submit()">
+          {% for n in niveles %}
+          <option value="{{ n }}" {% if n == logro.nivel %}selected{% endif %}>
+            {{ n | replace('-', ' ') | title }}
+          </option>
+          {% endfor %}
+        </select>
+      </form>
+      {% endif %}
+
+      <div class="card-actions">
+        <button type="button" class="btn-icon btn-edit" title="Editar">✏️</button>
+        <form action="/eliminar" method="POST">
+          <input type="hidden" name="index" value="{{ logro.index }}" />
+          <button type="submit" class="btn-icon btn-delete" title="Eliminar">🗑️</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty">
+      <span>🎮</span>
+      <p>Aún no hay logros. ¡Sé el primero en desbloquear uno!</p>
+    </div>
+  {% endif %}
+</div>
