@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevUnlocked 🔓</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <canvas id="fireworks-canvas"></canvas>
+  <div id="celebracion-msg" class="celebracion-msg"></div>
+
+  <div class="completadas-wrap">
+    {% if completadas.planta > 0 %}
+    <div class="completadas-badge" title="Plantas completadas">
+      <span class="completadas-icon">🌱</span>
+      <span class="completadas-num">{{ completadas.planta }}</span>
+    </div>
+    {% endif %}
+    {% if completadas.panda > 0 %}
+    <div class="completadas-badge" title="Pandas completados">
+      <span class="completadas-icon">🐼</span>
+      <span class="completadas-num">{{ completadas.panda }}</span>
+    </div>
+    {% endif %}
+    {% if completadas.perro > 0 %}
+    <div class="completadas-badge" title="Perros completados">
+      <span class="completadas-icon">🐶</span>
+      <span class="completadas-num">{{ completadas.perro }}</span>
+    </div>
+    {% endif %}
+    {% if completadas.gato > 0 %}
+    <div class="completadas-badge" title="Gatos completados">
+      <span class="completadas-icon">🐱</span>
+      <span class="completadas-num">{{ completadas.gato }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Modal elección de mascota ── -->
+  <div class="modal-overlay" id="modal-mascota">
+    <div class="modal-box">
+      <h2 id="modal-title">¡Elige tu compañero!</h2>
+      <p id="modal-sub">Crecerá contigo a medida que subas logros.</p>
+      <form action="/elegir-mascota" method="POST" class="modal-choices">
+
+        <button type="submit" name="tipo" value="planta" class="choice-btn">
+          <svg viewBox="0 0 120 160" width="80" height="107">
+            <path d="M34 122 Q30 122 32 148 L88 148 Q90 122 86 122 Z" fill="#7B4F2E"/>
+            <rect x="27" y="114" width="66" height="11" rx="5" fill="#9B6B3E"/>
+            <ellipse cx="60" cy="120" rx="29" ry="6" fill="#3d2b1f"/>
+            <rect x="55" y="95" width="10" height="27" rx="4" fill="#5a3520"/>
+            <ellipse cx="60" cy="100" rx="38" ry="15" fill="#3d7a30"/>
+            <ellipse cx="60" cy="88" rx="34" ry="16" fill="#4a8f3a"/>
+            <ellipse cx="60" cy="72" rx="27" ry="16" fill="#6ab04c"/>
+            <ellipse cx="60" cy="55" rx="19" ry="14" fill="#7ac856"/>
+            <ellipse cx="60" cy="40" rx="13" ry="11" fill="#8ed64e"/>
+          </svg>
+          <strong>Planta</strong>
+          <small>Crece desde semilla hasta árbol</small>
+        </button>
+
+        <button type="submit" name="tipo" value="panda" class="choice-btn">
+          <svg viewBox="0 0 120 160" width="80" height="107">
+            <ellipse cx="60" cy="118" rx="32" ry="30" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+            <ellipse cx="38" cy="120" rx="10" ry="8" fill="#1C1C1C"/>
+            <ellipse cx="82" cy="120" rx="10" ry="8" fill="#1C1C1C"/>
+            <circle cx="60" cy="78" r="32" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+            <circle cx="37" cy="56" r="13" fill="#1C1C1C"/>
+            <circle cx="83" cy="56" r="13" fill="#1C1C1C"/>
+            <ellipse cx="50" cy="76" rx="9" ry="8" fill="#1C1C1C"/>
+            <ellipse cx="70" cy="76" rx="9" ry="8" fill="#1C1C1C"/>
+            <circle cx="50" cy="75" r="4" fill="white"/>
+            <circle cx="70" cy="75" r="4" fill="white"/>
+            <circle cx="51" cy="74" r="2" fill="#1C1C1C"/>
+            <circle cx="71" cy="74" r="2" fill="#1C1C1C"/>
+            <ellipse cx="60" cy="88" rx="8" ry="5" fill="#1C1C1C"/>
+            <ellipse cx="60" cy="88" rx="5" ry="3" fill="#ffb3ba"/>
+            <path d="M53 96 Q60 102 67 96" fill="none" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <strong>Panda</strong>
+          <small>De bebé hasta panda adulto</small>
+        </button>
+
+        <button type="submit" name="tipo" value="perro" class="choice-btn">
+          <svg viewBox="0 0 120 160" width="80" height="107">
+            <ellipse cx="55" cy="116" rx="34" ry="30" fill="#D4956A"/>
+            <ellipse cx="55" cy="124" rx="20" ry="16" fill="#E8B08A"/>
+            <ellipse cx="26" cy="143" rx="12" ry="8" fill="#B87A4A"/>
+            <ellipse cx="84" cy="145" rx="12" ry="8" fill="#B87A4A"/>
+            <ellipse cx="36" cy="149" rx="10" ry="6" fill="#D4956A"/>
+            <ellipse cx="74" cy="149" rx="10" ry="6" fill="#D4956A"/>
+            <path d="M86 118 Q110 104 104 80" stroke="#D4956A" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <rect x="36" y="80" width="38" height="8" rx="4" fill="#7c3aed"/>
+            <circle cx="55" cy="84" r="4" fill="#f59e0b"/>
+            <circle cx="55" cy="64" r="32" fill="#D4956A"/>
+            <ellipse cx="55" cy="74" rx="16" ry="12" fill="#E8B08A"/>
+            <ellipse cx="24" cy="62" rx="13" ry="22" fill="#B87A4A" transform="rotate(8 24 62)"/>
+            <ellipse cx="86" cy="62" rx="13" ry="22" fill="#B87A4A" transform="rotate(-8 86 62)"/>
+            <circle cx="44" cy="57" r="6" fill="#1C1C1C"/>
+            <circle cx="66" cy="57" r="6" fill="#1C1C1C"/>
+            <circle cx="45" cy="56" r="2.5" fill="white"/>
+            <circle cx="67" cy="56" r="2.5" fill="white"/>
+            <ellipse cx="55" cy="70" rx="7" ry="5" fill="#1C1C1C"/>
+            <path d="M48 76 Q55 82 62 76" fill="none" stroke="#1C1C1C" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="55" cy="81" rx="5" ry="4" fill="#ff8fab"/>
+          </svg>
+          <strong>Perro</strong>
+          <small>De cachorro a guardián</small>
+        </button>
+
+        <button type="submit" name="tipo" value="gato" class="choice-btn">
+          <svg viewBox="0 0 120 160" width="80" height="107">
+            <ellipse cx="58" cy="114" rx="34" ry="30" fill="#E8A050"/>
+            <ellipse cx="58" cy="122" rx="20" ry="16" fill="#F5C89A"/>
+            <ellipse cx="36" cy="143" rx="12" ry="8" fill="#E8A050"/>
+            <ellipse cx="80" cy="145" rx="12" ry="8" fill="#E8A050"/>
+            <path d="M90 118 Q114 104 108 78" stroke="#E8A050" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <circle cx="90" cy="78" r="7" fill="#C8783A"/>
+            <circle cx="58" cy="62" r="30" fill="#E8A050"/>
+            <polygon points="30,40 44,64 18,64" fill="#E8A050"/>
+            <polygon points="86,40 100,64 74,64" fill="#E8A050"/>
+            <polygon points="32,43 44,63 22,63" fill="#FFB3BA"/>
+            <polygon points="84,43 98,63 74,63" fill="#FFB3BA"/>
+            <circle cx="46" cy="58" r="7" fill="#22C55E"/>
+            <circle cx="70" cy="58" r="7" fill="#22C55E"/>
+            <ellipse cx="46" cy="58" rx="3" ry="5" fill="#1C1C1C"/>
+            <ellipse cx="70" cy="58" rx="3" ry="5" fill="#1C1C1C"/>
+            <circle cx="47" cy="56" r="2" fill="white"/>
+            <circle cx="71" cy="56" r="2" fill="white"/>
+            <ellipse cx="58" cy="68" rx="5" ry="3.5" fill="#FFB3BA"/>
+            <path d="M52 72 Q58 77 64 72" fill="none" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <strong>Gato</strong>
+          <small>De gatito a maestro felino</small>
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  <header>
+    <h1>DevUnlocked 🔓</h1>
+  </header>
+
+  <!-- ── Mascota ── -->
+  <div class="mascota-card">
+    <div class="mascota-visual">
+
+      {% if mascota.tipo == 'planta' %}
+
+        {% if mascota.stage == 0 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <path d="M34 122 Q30 122 32 148 L88 148 Q90 122 86 122 Z" fill="#7B4F2E"/>
+          <rect x="27" y="114" width="66" height="11" rx="5" fill="#9B6B3E"/>
+          <ellipse cx="60" cy="120" rx="29" ry="6" fill="#3d2b1f"/>
+          <ellipse cx="60" cy="117" rx="6" ry="4" fill="#4a3728" opacity="0.5"/>
+        </svg>
+
+        {% elif mascota.stage == 1 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <path d="M34 122 Q30 122 32 148 L88 148 Q90 122 86 122 Z" fill="#7B4F2E"/>
+          <rect x="27" y="114" width="66" height="11" rx="5" fill="#9B6B3E"/>
+          <ellipse cx="60" cy="120" rx="29" ry="6" fill="#3d2b1f"/>
+          <rect x="58.5" y="93" width="3" height="29" rx="1.5" fill="#4a8f3a"/>
+          <ellipse cx="47" cy="101" rx="14" ry="6.5" fill="#6ab04c" transform="rotate(-28 47 101)"/>
+          <ellipse cx="73" cy="97" rx="14" ry="6.5" fill="#6ab04c" transform="rotate(28 73 97)"/>
+        </svg>
+
+        {% elif mascota.stage == 2 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <path d="M34 122 Q30 122 32 148 L88 148 Q90 122 86 122 Z" fill="#7B4F2E"/>
+          <rect x="27" y="114" width="66" height="11" rx="5" fill="#9B6B3E"/>
+          <ellipse cx="60" cy="120" rx="29" ry="6" fill="#3d2b1f"/>
+          <rect x="58.5" y="70" width="3" height="52" rx="1.5" fill="#4a8f3a"/>
+          <ellipse cx="45" cy="105" rx="16" ry="7.5" fill="#5a9e4a" transform="rotate(-25 45 105)"/>
+          <ellipse cx="75" cy="100" rx="16" ry="7.5" fill="#5a9e4a" transform="rotate(25 75 100)"/>
+          <ellipse cx="47" cy="85" rx="14" ry="6.5" fill="#6ab04c" transform="rotate(-20 47 85)"/>
+          <ellipse cx="73" cy="80" rx="14" ry="6.5" fill="#6ab04c" transform="rotate(20 73 80)"/>
+          <circle cx="60" cy="68" r="9" fill="#7ac856"/>
+        </svg>
+
+        {% elif mascota.stage == 3 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <path d="M34 122 Q30 122 32 148 L88 148 Q90 122 86 122 Z" fill="#7B4F2E"/>
+          <rect x="27" y="114" width="66" height="11" rx="5" fill="#9B6B3E"/>
+          <ellipse cx="60" cy="120" rx="29" ry="6" fill="#3d2b1f"/>
+          <rect x="57" y="52" width="6" height="70" rx="3" fill="#5a3520"/>
+          <path d="M60 90 Q40 80 30 74" stroke="#5a3520" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path d="M60 78 Q80 68 90 62" stroke="#5a3520" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <ellipse cx="60" cy="113" rx="22" ry="10" fill="#4a8f3a"/>
+          <ellipse cx="32" cy="76" rx="20" ry="11" fill="#5a9e4a"/>
+          <ellipse cx="88" cy="64" rx="20" ry="11" fill="#5a9e4a"/>
+          <ellipse cx="44" cy="60" rx="18" ry="10" fill="#6ab04c"/>
+          <ellipse cx="76" cy="52" rx="18" ry="10" fill="#6ab04c"/>
+          <ellipse cx="60" cy="46" rx="20" ry="11" fill="#7ac856"/>
+        </svg>
+
+        {% else %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <path d="M34 122 Q30 122 32 148 L88 148 Q90 122 86 122 Z" fill="#7B4F2E"/>
+          <rect x="27" y="114" width="66" height="11" rx="5" fill="#9B6B3E"/>
+          <ellipse cx="60" cy="120" rx="29" ry="6" fill="#3d2b1f"/>
+          <rect x="55" y="95" width="10" height="27" rx="4" fill="#5a3520"/>
+          <ellipse cx="60" cy="100" rx="40" ry="16" fill="#3d7a30"/>
+          <ellipse cx="60" cy="90" rx="42" ry="17" fill="#4a8f3a"/>
+          <ellipse cx="60" cy="73" rx="36" ry="17" fill="#5a9e4a"/>
+          <ellipse cx="60" cy="56" rx="29" ry="16" fill="#6ab04c"/>
+          <ellipse cx="60" cy="40" rx="22" ry="15" fill="#7ac856"/>
+          <ellipse cx="60" cy="26" rx="14" ry="12" fill="#8ed64e"/>
+          <circle cx="38" cy="76" r="4" fill="#ff8fab"/>
+          <circle cx="82" cy="70" r="4" fill="#ff8fab"/>
+          <circle cx="54" cy="54" r="3.5" fill="#ffb347"/>
+          <circle cx="72" cy="58" r="3.5" fill="#ff8fab"/>
+        </svg>
+        {% endif %}
+
+      {% elif mascota.tipo == 'panda' %}
+
+        {% if mascota.stage == 0 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="60" cy="130" rx="16" ry="13" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="60" cy="103" r="17" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="47" cy="90" r="6.5" fill="#1C1C1C"/>
+          <circle cx="73" cy="90" r="6.5" fill="#1C1C1C"/>
+          <ellipse cx="51" cy="101" rx="5.5" ry="5" fill="#1C1C1C"/>
+          <ellipse cx="69" cy="101" rx="5.5" ry="5" fill="#1C1C1C"/>
+          <path d="M48 101 Q51 98.5 54 101" fill="none" stroke="#f5f5f5" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M66 101 Q69 98.5 72 101" fill="none" stroke="#f5f5f5" stroke-width="1.6" stroke-linecap="round"/>
+          <ellipse cx="60" cy="108" rx="3.5" ry="2.5" fill="#1C1C1C"/>
+          <ellipse cx="44" cy="109" rx="5" ry="3.5" fill="#ffb3ba" opacity="0.55"/>
+          <ellipse cx="76" cy="109" rx="5" ry="3.5" fill="#ffb3ba" opacity="0.55"/>
+          <path d="M57 113 Q60 116 63 113" fill="none" stroke="#1C1C1C" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+
+        {% elif mascota.stage == 1 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="60" cy="128" rx="20" ry="18" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <ellipse cx="42" cy="136" rx="8" ry="6" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <ellipse cx="78" cy="136" rx="8" ry="6" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="60" cy="97" r="22" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="43" cy="80" r="9" fill="#1C1C1C"/>
+          <circle cx="77" cy="80" r="9" fill="#1C1C1C"/>
+          <ellipse cx="51" cy="95" rx="7" ry="6.5" fill="#1C1C1C"/>
+          <ellipse cx="69" cy="95" rx="7" ry="6.5" fill="#1C1C1C"/>
+          <circle cx="51" cy="94" r="3.5" fill="white"/>
+          <circle cx="69" cy="94" r="3.5" fill="white"/>
+          <circle cx="52" cy="93" r="1.8" fill="#1C1C1C"/>
+          <circle cx="70" cy="93" r="1.8" fill="#1C1C1C"/>
+          <ellipse cx="60" cy="103" rx="5" ry="3" fill="#1C1C1C"/>
+          <ellipse cx="60" cy="103" rx="3" ry="2" fill="#ffb3ba"/>
+          <ellipse cx="42" cy="105" rx="6" ry="4" fill="#ffb3ba" opacity="0.5"/>
+          <ellipse cx="78" cy="105" rx="6" ry="4" fill="#ffb3ba" opacity="0.5"/>
+          <path d="M55 110 Q60 114 65 110" fill="none" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+
+        {% elif mascota.stage == 2 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="60" cy="125" rx="28" ry="25" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <ellipse cx="36" cy="138" rx="10" ry="8" fill="#1C1C1C"/>
+          <ellipse cx="84" cy="138" rx="10" ry="8" fill="#1C1C1C"/>
+          <ellipse cx="36" cy="115" rx="9" ry="7" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <ellipse cx="84" cy="115" rx="9" ry="7" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="60" cy="86" r="27" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="38" cy="65" r="12" fill="#1C1C1C"/>
+          <circle cx="82" cy="65" r="12" fill="#1C1C1C"/>
+          <ellipse cx="49" cy="84" rx="9" ry="8" fill="#1C1C1C"/>
+          <ellipse cx="71" cy="84" rx="9" ry="8" fill="#1C1C1C"/>
+          <circle cx="49" cy="83" r="4.5" fill="white"/>
+          <circle cx="71" cy="83" r="4.5" fill="white"/>
+          <circle cx="50" cy="82" r="2.2" fill="#1C1C1C"/>
+          <circle cx="72" cy="82" r="2.2" fill="#1C1C1C"/>
+          <ellipse cx="60" cy="93" rx="6" ry="4" fill="#1C1C1C"/>
+          <ellipse cx="60" cy="93" rx="4" ry="2.5" fill="#ffb3ba"/>
+          <ellipse cx="40" cy="97" rx="7" ry="5" fill="#ffb3ba" opacity="0.45"/>
+          <ellipse cx="80" cy="97" rx="7" ry="5" fill="#ffb3ba" opacity="0.45"/>
+          <path d="M53 101 Q60 107 67 101" fill="none" stroke="#1C1C1C" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+
+        {% elif mascota.stage == 3 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="60" cy="122" rx="34" ry="32" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <ellipse cx="30" cy="140" rx="12" ry="9" fill="#1C1C1C"/>
+          <ellipse cx="90" cy="140" rx="12" ry="9" fill="#1C1C1C"/>
+          <ellipse cx="29" cy="112" rx="11" ry="8" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <ellipse cx="91" cy="112" rx="11" ry="8" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="60" cy="74" r="30" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="35" cy="50" r="14" fill="#1C1C1C"/>
+          <circle cx="85" cy="50" r="14" fill="#1C1C1C"/>
+          <ellipse cx="47" cy="72" rx="10" ry="9.5" fill="#1C1C1C"/>
+          <ellipse cx="73" cy="72" rx="10" ry="9.5" fill="#1C1C1C"/>
+          <circle cx="47" cy="71" r="5.5" fill="white"/>
+          <circle cx="73" cy="71" r="5.5" fill="white"/>
+          <circle cx="48" cy="70" r="2.8" fill="#1C1C1C"/>
+          <circle cx="74" cy="70" r="2.8" fill="#1C1C1C"/>
+          <ellipse cx="60" cy="82" rx="7" ry="4.5" fill="#1C1C1C"/>
+          <ellipse cx="60" cy="82" rx="4.5" ry="3" fill="#ffb3ba"/>
+          <path d="M52 90 Q60 97 68 90" fill="none" stroke="#1C1C1C" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+
+        {% else %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <rect x="89" y="15" width="7" height="145" rx="3.5" fill="#4a8f3a"/>
+          <rect x="89" y="30" width="7" height="3" rx="1" fill="#3d7a30"/>
+          <rect x="89" y="55" width="7" height="3" rx="1" fill="#3d7a30"/>
+          <rect x="89" y="80" width="7" height="3" rx="1" fill="#3d7a30"/>
+          <rect x="89" y="105" width="7" height="3" rx="1" fill="#3d7a30"/>
+          <ellipse cx="92.5" cy="28" rx="12" ry="5" fill="#6ab04c" transform="rotate(-20 92.5 28)"/>
+          <ellipse cx="92.5" cy="55" rx="14" ry="5" fill="#6ab04c" transform="rotate(20 92.5 55)"/>
+          <ellipse cx="92.5" cy="82" rx="12" ry="5" fill="#6ab04c" transform="rotate(-15 92.5 82)"/>
+          <ellipse cx="54" cy="120" rx="36" ry="34" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <ellipse cx="24" cy="140" rx="13" ry="10" fill="#1C1C1C"/>
+          <ellipse cx="84" cy="145" rx="13" ry="10" fill="#1C1C1C"/>
+          <ellipse cx="24" cy="108" rx="12" ry="9" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <ellipse cx="84" cy="108" rx="16" ry="9" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1" transform="rotate(-30 84 108)"/>
+          <circle cx="54" cy="70" r="34" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1"/>
+          <circle cx="27" cy="44" r="16" fill="#1C1C1C"/>
+          <circle cx="81" cy="44" r="16" fill="#1C1C1C"/>
+          <ellipse cx="40" cy="68" rx="12" ry="11" fill="#1C1C1C"/>
+          <ellipse cx="68" cy="68" rx="12" ry="11" fill="#1C1C1C"/>
+          <circle cx="40" cy="67" r="6.5" fill="white"/>
+          <circle cx="68" cy="67" r="6.5" fill="white"/>
+          <circle cx="41" cy="66" r="3.2" fill="#1C1C1C"/>
+          <circle cx="69" cy="66" r="3.2" fill="#1C1C1C"/>
+          <ellipse cx="54" cy="79" rx="9" ry="5.5" fill="#1C1C1C"/>
+          <ellipse cx="54" cy="79" rx="5.5" ry="3.5" fill="#ffb3ba"/>
+          <path d="M44 89 Q54 97 64 89" fill="none" stroke="#1C1C1C" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        {% endif %}
+
+      {% elif mascota.tipo == 'perro' %}
+
+        {% if mascota.stage == 0 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- tiny puppy — just a big round head -->
+          <ellipse cx="60" cy="136" rx="14" ry="10" fill="#D4956A"/>
+          <circle cx="60" cy="108" r="20" fill="#D4956A"/>
+          <ellipse cx="43" cy="115" rx="8" ry="13" fill="#B87A4A" transform="rotate(15 43 115)"/>
+          <ellipse cx="77" cy="115" rx="8" ry="13" fill="#B87A4A" transform="rotate(-15 77 115)"/>
+          <circle cx="53" cy="104" r="3.5" fill="#1C1C1C"/>
+          <circle cx="67" cy="104" r="3.5" fill="#1C1C1C"/>
+          <circle cx="54" cy="103" r="1.5" fill="white"/>
+          <circle cx="68" cy="103" r="1.5" fill="white"/>
+          <ellipse cx="60" cy="114" rx="4" ry="3" fill="#1C1C1C"/>
+          <path d="M57 118 Q60 121 63 118" fill="none" stroke="#1C1C1C" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="44" cy="116" rx="5" ry="3" fill="#ffb3ba" opacity="0.5"/>
+          <ellipse cx="76" cy="116" rx="5" ry="3" fill="#ffb3ba" opacity="0.5"/>
+        </svg>
+
+        {% elif mascota.stage == 1 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- small puppy with tiny body -->
+          <ellipse cx="60" cy="128" rx="20" ry="17" fill="#D4956A"/>
+          <ellipse cx="44" cy="143" rx="8" ry="5" fill="#D4956A"/>
+          <ellipse cx="76" cy="143" rx="8" ry="5" fill="#D4956A"/>
+          <path d="M79 126 Q96 116 91 104" stroke="#D4956A" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <circle cx="60" cy="96" r="22" fill="#D4956A"/>
+          <ellipse cx="40" cy="102" rx="10" ry="16" fill="#B87A4A" transform="rotate(12 40 102)"/>
+          <ellipse cx="80" cy="102" rx="10" ry="16" fill="#B87A4A" transform="rotate(-12 80 102)"/>
+          <circle cx="52" cy="91" r="4" fill="#1C1C1C"/>
+          <circle cx="68" cy="91" r="4" fill="#1C1C1C"/>
+          <circle cx="53" cy="90" r="1.8" fill="white"/>
+          <circle cx="69" cy="90" r="1.8" fill="white"/>
+          <ellipse cx="60" cy="101" rx="5" ry="3.5" fill="#1C1C1C"/>
+          <path d="M56 105 Q60 109 64 105" fill="none" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="60" cy="109" rx="4" ry="3" fill="#ff8fab"/>
+          <ellipse cx="42" cy="103" rx="6" ry="4" fill="#ffb3ba" opacity="0.45"/>
+          <ellipse cx="78" cy="103" rx="6" ry="4" fill="#ffb3ba" opacity="0.45"/>
+        </svg>
+
+        {% elif mascota.stage == 2 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- medium dog sitting -->
+          <ellipse cx="60" cy="118" rx="28" ry="24" fill="#D4956A"/>
+          <ellipse cx="60" cy="126" rx="16" ry="12" fill="#E8B08A"/>
+          <rect x="40" y="133" width="12" height="20" rx="6" fill="#D4956A"/>
+          <rect x="68" y="133" width="12" height="20" rx="6" fill="#D4956A"/>
+          <path d="M86 120 Q106 106 100 88" stroke="#D4956A" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <circle cx="60" cy="80" r="26" fill="#D4956A"/>
+          <ellipse cx="60" cy="91" rx="14" ry="10" fill="#E8B08A"/>
+          <ellipse cx="32" cy="84" rx="12" ry="20" fill="#B87A4A" transform="rotate(10 32 84)"/>
+          <ellipse cx="88" cy="84" rx="12" ry="20" fill="#B87A4A" transform="rotate(-10 88 84)"/>
+          <circle cx="50" cy="74" r="5.5" fill="#1C1C1C"/>
+          <circle cx="70" cy="74" r="5.5" fill="#1C1C1C"/>
+          <circle cx="51" cy="73" r="2.2" fill="white"/>
+          <circle cx="71" cy="73" r="2.2" fill="white"/>
+          <ellipse cx="60" cy="88" rx="6" ry="4.5" fill="#1C1C1C"/>
+          <path d="M54 93 Q60 98 66 93" fill="none" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="60" cy="97" rx="5" ry="4" fill="#ff8fab"/>
+          <ellipse cx="38" cy="90" rx="7" ry="4.5" fill="#ffb3ba" opacity="0.4"/>
+          <ellipse cx="82" cy="90" rx="7" ry="4.5" fill="#ffb3ba" opacity="0.4"/>
+        </svg>
+
+        {% elif mascota.stage == 3 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- adult dog with collar -->
+          <ellipse cx="58" cy="115" rx="34" ry="30" fill="#D4956A"/>
+          <ellipse cx="58" cy="124" rx="20" ry="16" fill="#E8B08A"/>
+          <ellipse cx="28" cy="140" rx="12" ry="8" fill="#B87A4A"/>
+          <ellipse cx="88" cy="142" rx="12" ry="8" fill="#B87A4A"/>
+          <ellipse cx="36" cy="148" rx="10" ry="7" fill="#D4956A"/>
+          <ellipse cx="80" cy="148" rx="10" ry="7" fill="#D4956A"/>
+          <path d="M90 118 Q114 102 108 80" stroke="#D4956A" stroke-width="11" fill="none" stroke-linecap="round"/>
+          <rect x="38" y="80" width="40" height="9" rx="4.5" fill="#7c3aed"/>
+          <circle cx="58" cy="84" r="5" fill="#f59e0b"/>
+          <circle cx="58" cy="62" r="32" fill="#D4956A"/>
+          <ellipse cx="58" cy="74" rx="18" ry="12" fill="#E8B08A"/>
+          <ellipse cx="26" cy="60" rx="13" ry="22" fill="#B87A4A" transform="rotate(8 26 60)"/>
+          <ellipse cx="90" cy="60" rx="13" ry="22" fill="#B87A4A" transform="rotate(-8 90 60)"/>
+          <circle cx="46" cy="54" r="7" fill="#1C1C1C"/>
+          <circle cx="70" cy="54" r="7" fill="#1C1C1C"/>
+          <circle cx="47" cy="53" r="3" fill="white"/>
+          <circle cx="71" cy="53" r="3" fill="white"/>
+          <ellipse cx="58" cy="70" rx="8" ry="6" fill="#1C1C1C"/>
+          <path d="M50 77 Q58 83 66 77" fill="none" stroke="#1C1C1C" stroke-width="2.5" stroke-linecap="round"/>
+          <ellipse cx="58" cy="82" rx="6" ry="5" fill="#ff8fab"/>
+        </svg>
+
+        {% else %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- guardian dog — biggest, proudest -->
+          <ellipse cx="55" cy="112" rx="38" ry="35" fill="#D4956A"/>
+          <ellipse cx="55" cy="122" rx="24" ry="20" fill="#E8B08A"/>
+          <ellipse cx="22" cy="140" rx="14" ry="10" fill="#B87A4A"/>
+          <ellipse cx="88" cy="143" rx="14" ry="10" fill="#B87A4A"/>
+          <ellipse cx="32" cy="150" rx="12" ry="8" fill="#D4956A"/>
+          <ellipse cx="78" cy="150" rx="12" ry="8" fill="#D4956A"/>
+          <path d="M92 118 Q118 100 112 72" stroke="#D4956A" stroke-width="13" fill="none" stroke-linecap="round"/>
+          <!-- collar -->
+          <rect x="32" y="73" width="46" height="10" rx="5" fill="#7c3aed"/>
+          <!-- star medal -->
+          <circle cx="55" cy="83" r="7" fill="#f59e0b"/>
+          <text x="55" y="87" text-anchor="middle" font-size="8" fill="#1C1C1C" font-weight="bold">★</text>
+          <circle cx="55" cy="56" r="36" fill="#D4956A"/>
+          <ellipse cx="55" cy="69" rx="20" ry="14" fill="#E8B08A"/>
+          <ellipse cx="18" cy="52" rx="15" ry="26" fill="#B87A4A" transform="rotate(6 18 52)"/>
+          <ellipse cx="92" cy="52" rx="15" ry="26" fill="#B87A4A" transform="rotate(-6 92 52)"/>
+          <circle cx="42" cy="47" r="8.5" fill="#1C1C1C"/>
+          <circle cx="68" cy="47" r="8.5" fill="#1C1C1C"/>
+          <circle cx="43" cy="46" r="3.5" fill="white"/>
+          <circle cx="69" cy="46" r="3.5" fill="white"/>
+          <circle cx="44" cy="45" r="1.8" fill="#1C1C1C"/>
+          <circle cx="70" cy="45" r="1.8" fill="#1C1C1C"/>
+          <ellipse cx="55" cy="65" rx="9" ry="6.5" fill="#1C1C1C"/>
+          <ellipse cx="52" cy="65" rx="2" ry="1.5" fill="#0d0f17" opacity="0.6"/>
+          <ellipse cx="58" cy="65" rx="2" ry="1.5" fill="#0d0f17" opacity="0.6"/>
+          <path d="M46 74 Q55 82 64 74" fill="none" stroke="#1C1C1C" stroke-width="3" stroke-linecap="round"/>
+          <ellipse cx="55" cy="80" rx="6" ry="5" fill="#ff8fab"/>
+        </svg>
+        {% endif %}
+
+      {% else %}{# gato #}
+
+        {% if mascota.stage == 0 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- tiny kitten head -->
+          <ellipse cx="60" cy="135" rx="13" ry="9" fill="#E8A050"/>
+          <path d="M72 132 Q80 124 76 116" stroke="#E8A050" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <circle cx="60" cy="108" r="20" fill="#E8A050"/>
+          <polygon points="44,96 50,110 38,110" fill="#E8A050"/>
+          <polygon points="76,96 82,110 70,110" fill="#E8A050"/>
+          <polygon points="45,98 50,109 40,109" fill="#FFB3BA"/>
+          <polygon points="75,98 80,109 70,109" fill="#FFB3BA"/>
+          <circle cx="53" cy="105" r="4" fill="#22C55E"/>
+          <circle cx="67" cy="105" r="4" fill="#22C55E"/>
+          <ellipse cx="53" cy="105" rx="2" ry="3" fill="#1C1C1C"/>
+          <ellipse cx="67" cy="105" rx="2" ry="3" fill="#1C1C1C"/>
+          <circle cx="54" cy="104" r="1" fill="white"/>
+          <circle cx="68" cy="104" r="1" fill="white"/>
+          <ellipse cx="60" cy="113" rx="3" ry="2" fill="#FFB3BA"/>
+          <path d="M57 116 Q60 119 63 116" fill="none" stroke="#1C1C1C" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="42" y1="113" x2="54" y2="114" stroke="#1C1C1C" stroke-width="1" opacity="0.5"/>
+          <line x1="42" y1="116" x2="54" y2="115" stroke="#1C1C1C" stroke-width="1" opacity="0.5"/>
+          <line x1="66" y1="114" x2="78" y2="113" stroke="#1C1C1C" stroke-width="1" opacity="0.5"/>
+          <line x1="66" y1="115" x2="78" y2="116" stroke="#1C1C1C" stroke-width="1" opacity="0.5"/>
+        </svg>
+
+        {% elif mascota.stage == 1 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- small kitten with body -->
+          <ellipse cx="60" cy="126" rx="20" ry="17" fill="#E8A050"/>
+          <ellipse cx="60" cy="132" rx="11" ry="9" fill="#F5C89A"/>
+          <ellipse cx="44" cy="141" rx="8" ry="5" fill="#E8A050"/>
+          <ellipse cx="76" cy="141" rx="8" ry="5" fill="#E8A050"/>
+          <path d="M79 124 Q96 113 92 98" stroke="#E8A050" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <circle cx="79" cy="98" r="5" fill="#C8783A"/>
+          <circle cx="60" cy="94" r="23" fill="#E8A050"/>
+          <polygon points="40,80 47,96 33,96" fill="#E8A050"/>
+          <polygon points="80,80 87,96 73,96" fill="#E8A050"/>
+          <polygon points="41,82 47,95 35,95" fill="#FFB3BA"/>
+          <polygon points="79,82 85,95 73,95" fill="#FFB3BA"/>
+          <circle cx="51" cy="90" r="5" fill="#22C55E"/>
+          <circle cx="69" cy="90" r="5" fill="#22C55E"/>
+          <ellipse cx="51" cy="90" rx="2.5" ry="3.5" fill="#1C1C1C"/>
+          <ellipse cx="69" cy="90" rx="2.5" ry="3.5" fill="#1C1C1C"/>
+          <circle cx="52" cy="89" r="1.2" fill="white"/>
+          <circle cx="70" cy="89" r="1.2" fill="white"/>
+          <ellipse cx="60" cy="98" rx="3.5" ry="2.5" fill="#FFB3BA"/>
+          <path d="M56 101 Q60 105 64 101" fill="none" stroke="#1C1C1C" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="37" y1="98" x2="53" y2="99" stroke="#1C1C1C" stroke-width="1" opacity="0.5"/>
+          <line x1="37" y1="101" x2="53" y2="100" stroke="#1C1C1C" stroke-width="1" opacity="0.5"/>
+          <line x1="67" y1="99" x2="83" y2="98" stroke="#1C1C1C" stroke-width="1" opacity="0.5"/>
+          <line x1="67" y1="100" x2="83" y2="101" stroke="#1C1C1C" stroke-width="1" opacity="0.5"/>
+        </svg>
+
+        {% elif mascota.stage == 2 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- young cat sitting -->
+          <ellipse cx="60" cy="119" rx="27" ry="23" fill="#E8A050"/>
+          <ellipse cx="60" cy="127" rx="15" ry="13" fill="#F5C89A"/>
+          <ellipse cx="42" cy="141" rx="11" ry="7" fill="#E8A050"/>
+          <ellipse cx="78" cy="141" rx="11" ry="7" fill="#E8A050"/>
+          <path d="M86 121 Q108 108 103 88" stroke="#E8A050" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <circle cx="103" cy="88" r="6" fill="#C8783A"/>
+          <path d="M44 114 Q60 110 76 114" stroke="#C8783A" stroke-width="2" fill="none" opacity="0.4"/>
+          <circle cx="60" cy="83" r="26" fill="#E8A050"/>
+          <polygon points="36,64 45,84 27,84" fill="#E8A050"/>
+          <polygon points="84,64 93,84 75,84" fill="#E8A050"/>
+          <polygon points="37,67 45,83 29,83" fill="#FFB3BA"/>
+          <polygon points="83,67 91,83 75,83" fill="#FFB3BA"/>
+          <path d="M48 71 L53 66 L60 72 L67 66 L72 71" stroke="#C8783A" stroke-width="1.5" fill="none" opacity="0.4"/>
+          <circle cx="49" cy="79" r="6" fill="#22C55E"/>
+          <circle cx="71" cy="79" r="6" fill="#22C55E"/>
+          <ellipse cx="49" cy="79" rx="2.8" ry="4.2" fill="#1C1C1C"/>
+          <ellipse cx="71" cy="79" rx="2.8" ry="4.2" fill="#1C1C1C"/>
+          <circle cx="50" cy="77" r="1.5" fill="white"/>
+          <circle cx="72" cy="77" r="1.5" fill="white"/>
+          <ellipse cx="60" cy="88" rx="4" ry="3" fill="#FFB3BA"/>
+          <path d="M55 92 Q60 96 65 92" fill="none" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round"/>
+          <line x1="34" y1="88" x2="52" y2="89" stroke="#1C1C1C" stroke-width="1.2" opacity="0.5"/>
+          <line x1="34" y1="91" x2="52" y2="90" stroke="#1C1C1C" stroke-width="1.2" opacity="0.5"/>
+          <line x1="34" y1="94" x2="52" y2="92" stroke="#1C1C1C" stroke-width="1.2" opacity="0.5"/>
+          <line x1="68" y1="89" x2="86" y2="88" stroke="#1C1C1C" stroke-width="1.2" opacity="0.5"/>
+          <line x1="68" y1="90" x2="86" y2="91" stroke="#1C1C1C" stroke-width="1.2" opacity="0.5"/>
+          <line x1="68" y1="92" x2="86" y2="94" stroke="#1C1C1C" stroke-width="1.2" opacity="0.5"/>
+        </svg>
+
+        {% elif mascota.stage == 3 %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- adult cat sitting -->
+          <ellipse cx="58" cy="116" rx="32" ry="28" fill="#E8A050"/>
+          <ellipse cx="58" cy="126" rx="20" ry="16" fill="#F5C89A"/>
+          <ellipse cx="36" cy="142" rx="13" ry="8" fill="#E8A050"/>
+          <ellipse cx="80" cy="144" rx="13" ry="8" fill="#E8A050"/>
+          <path d="M88 120 Q114 105 108 78" stroke="#E8A050" stroke-width="11" fill="none" stroke-linecap="round"/>
+          <circle cx="90" cy="78" r="8" fill="#C8783A"/>
+          <path d="M36 110 Q58 106 80 110" stroke="#C8783A" stroke-width="2.5" fill="none" opacity="0.38"/>
+          <path d="M34 120 Q58 116 82 120" stroke="#C8783A" stroke-width="2.5" fill="none" opacity="0.38"/>
+          <circle cx="58" cy="74" r="30" fill="#E8A050"/>
+          <polygon points="31,52 43,75 19,75" fill="#E8A050"/>
+          <polygon points="85,52 97,75 73,75" fill="#E8A050"/>
+          <polygon points="33,55 43,74 23,74" fill="#FFB3BA"/>
+          <polygon points="83,55 95,74 73,74" fill="#FFB3BA"/>
+          <path d="M43 61 L49 55 L58 62 L67 55 L73 61" stroke="#C8783A" stroke-width="2" fill="none" opacity="0.4"/>
+          <circle cx="45" cy="70" r="8" fill="#22C55E"/>
+          <circle cx="71" cy="70" r="8" fill="#22C55E"/>
+          <ellipse cx="45" cy="70" rx="3.5" ry="5.5" fill="#1C1C1C"/>
+          <ellipse cx="71" cy="70" rx="3.5" ry="5.5" fill="#1C1C1C"/>
+          <circle cx="46" cy="68" r="2" fill="white"/>
+          <circle cx="72" cy="68" r="2" fill="white"/>
+          <ellipse cx="58" cy="80" rx="5" ry="3.5" fill="#FFB3BA"/>
+          <path d="M52 84 Q58 89 64 84" fill="none" stroke="#1C1C1C" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="80" x2="50" y2="81" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="28" y1="83" x2="50" y2="82" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="28" y1="86" x2="50" y2="84" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="66" y1="81" x2="88" y2="80" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="66" y1="82" x2="88" y2="83" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="66" y1="84" x2="88" y2="86" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+
+        {% else %}
+        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- maestro felino — regal cat with bow -->
+          <ellipse cx="57" cy="112" rx="38" ry="35" fill="#E8A050"/>
+          <ellipse cx="57" cy="124" rx="26" ry="22" fill="#F5C89A"/>
+          <ellipse cx="28" cy="145" rx="15" ry="10" fill="#E8A050"/>
+          <ellipse cx="86" cy="147" rx="15" ry="10" fill="#E8A050"/>
+          <path d="M93 116 Q118 100 112 70" stroke="#E8A050" stroke-width="13" fill="none" stroke-linecap="round"/>
+          <circle cx="94" cy="70" r="9" fill="#C8783A"/>
+          <path d="M30 104 Q57 100 84 104" stroke="#C8783A" stroke-width="3" fill="none" opacity="0.35"/>
+          <path d="M28 116 Q57 112 86 116" stroke="#C8783A" stroke-width="3" fill="none" opacity="0.35"/>
+          <!-- bow/collar -->
+          <rect x="34" y="74" width="46" height="9" rx="4.5" fill="#06b6d4"/>
+          <polygon points="52,70 57,78 46,74" fill="#06b6d4"/>
+          <polygon points="62,70 57,78 68,74" fill="#06b6d4"/>
+          <circle cx="57" cy="74" r="5" fill="white" opacity="0.85"/>
+          <circle cx="57" cy="55" r="36" fill="#E8A050"/>
+          <!-- big ears -->
+          <polygon points="24,28 40,58 12,58" fill="#E8A050"/>
+          <polygon points="90,28 108,58 78,58" fill="#E8A050"/>
+          <polygon points="26,31 40,57 16,57" fill="#FFB3BA"/>
+          <polygon points="88,31 106,57 78,57" fill="#FFB3BA"/>
+          <!-- cheek fluff -->
+          <ellipse cx="22" cy="64" rx="10" ry="7" fill="#F5C89A" opacity="0.55"/>
+          <ellipse cx="92" cy="64" rx="10" ry="7" fill="#F5C89A" opacity="0.55"/>
+          <path d="M38 43 L45 36 L57 44 L69 36 L76 43" stroke="#C8783A" stroke-width="2.5" fill="none" opacity="0.4"/>
+          <circle cx="43" cy="51" r="9.5" fill="#22C55E"/>
+          <circle cx="71" cy="51" r="9.5" fill="#22C55E"/>
+          <ellipse cx="43" cy="51" rx="4" ry="6.5" fill="#1C1C1C"/>
+          <ellipse cx="71" cy="51" rx="4" ry="6.5" fill="#1C1C1C"/>
+          <circle cx="44" cy="49" r="2.5" fill="white"/>
+          <circle cx="72" cy="49" r="2.5" fill="white"/>
+          <ellipse cx="57" cy="63" rx="6" ry="4" fill="#FFB3BA"/>
+          <path d="M49 68 Q57 74 65 68" fill="none" stroke="#1C1C1C" stroke-width="3" stroke-linecap="round"/>
+          <line x1="20" y1="63" x2="47" y2="64" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="20" y1="67" x2="47" y2="66" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="20" y1="71" x2="47" y2="68" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="67" y1="64" x2="94" y2="63" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="67" y1="66" x2="94" y2="67" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+          <line x1="67" y1="68" x2="94" y2="71" stroke="#1C1C1C" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+        {% endif %}
+
+      {% endif %}
+    </div>
+
+    <div class="mascota-info">
+      <p class="mascota-stage-name">{{ mascota.stage_name }}</p>
+      <div class="mascota-progress-wrap">
+        <div class="mascota-bar-track">
+          <div class="mascota-bar-fill" style="width: {{ mascota.progreso * 10 }}%"></div>
+        </div>
+        <span class="mascota-count">{{ mascota.progreso }}/10</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="tipo-tabs">
+      <button type="button" class="tab active" data-tipo="logro">🏆 Logro</button>
+      <button type="button" class="tab" data-tipo="proceso">⚙️ En proceso</button>
+    </div>
+    <form action="/añadir" method="POST">
+      <input type="hidden" name="tipo" id="tipo-input" value="logro" />
+      <textarea id="logro" name="logro" placeholder="Escribe tu logro del día..." required></textarea>
+      <div class="nivel-row" id="nivel-row">
+        <label for="nivel-select">Nivel inicial</label>
+        <select name="nivel" id="nivel-select">
+          {% for n in niveles %}
+          <option value="{{ n }}">{{ n | replace('-', ' ') | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn-submit" type="submit">⚡ Publicar</button>
+    </form>
+  </div>
+
+  <p class="wall-title">Muro de victorias</p>
+
+  <div class="wall">
+    {% if logros %}
+      {% for logro in logros %}
+      <div class="card {% if logro.tipo == 'proceso' %}card-proceso{% endif %}">
+        <div class="card-top">
+          <span class="card-icon">{% if logro.tipo == 'proceso' %}⚙️{% else %}🏆{% endif %}</span>
+          {% if logro.tipo == 'proceso' %}
+          <span class="nivel-badge nivel-{{ logro.nivel }}">{{ logro.nivel | replace('-', ' ') | title }}</span>
+          {% endif %}
+        </div>
+        <p>{{ logro.texto }}</p>
+        {% if logro.tipo == 'proceso' %}
+        <form action="/actualizar-nivel" method="POST" class="nivel-update-form">
+          <input type="hidden" name="index" value="{{ logro.index }}" />
+          <select name="nivel" class="nivel-select" onchange="this.form.submit()">
+            {% for n in niveles %}
+            <option value="{{ n }}" {% if n == logro.nivel %}selected{% endif %}>
+              {{ n | replace('-', ' ') | title }}
+            </option>
+            {% endfor %}
+          </select>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">
+        <span>🎮</span>
+        <p>Aún no hay logros. ¡Sé el primero en desbloquear uno!</p>
+      </div>
+    {% endif %}
+  </div>
+
+<script>
+  /* ── Modal ── */
+  const primeraVez = {{ mascota.primera_vez | tojson }};
+  const params     = new URLSearchParams(window.location.search);
+  const modal      = document.getElementById('modal-mascota');
+
+  function openModal(completado) {
+    if (completado) {
+      document.getElementById('modal-title').textContent = '🎉 ¡Tu compañero creció!';
+      document.getElementById('modal-sub').textContent   = '¿Qué quieres criar ahora?';
+    }
+    modal.style.display = 'flex';
+  }
+
+  if (primeraVez) {
+    openModal(false);
+  } else if (params.get('completado') === '1') {
+    launchFireworks();
+    openModal(true);
+  }
+
+  /* ── Tipo tabs ── */
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const tipo = tab.dataset.tipo;
+      document.getElementById('tipo-input').value = tipo;
+      document.getElementById('nivel-row').style.display = tipo === 'proceso' ? 'flex' : 'none';
+      document.getElementById('logro').placeholder = tipo === 'proceso'
+        ? 'Ej: Aprendiendo Python...' : 'Escribe tu logro del día...';
+    });
+  });
+
+  /* ── Mensajes ── */
+  const POOL = {
+    logro:   ['🎉 ¡Increíble, sigue así!','🚀 ¡Eres imparable!','⚡ ¡Achievement desbloqueado!',
+              '🔥 ¡Máquina de victorias!','💪 ¡Eso es dedicación pura!','🏆 ¡Un paso más hacia la cima!'],
+    proceso: ['🌱 ¡Cada experto fue principiante!','🧠 ¡Aprender es el superpoder más grande!',
+              '⚙️ ¡El progreso constante vence al talento!','📚 ¡Un día de práctica más, un nivel ganado!'],
+    subio:   ['📈 ¡Vamos por más, no pares ahora!','🚀 ¡Nivel arriba! ¡El techo no existe!',
+              '🔥 ¡Eso es crecimiento real, sigue empujando!','💥 ¡Subiste de nivel como un pro!'],
+    bajo:    ['💪 ¡Los tropiezos son parte del camino!','🌊 ¡Hasta los mejores retroceden para tomar impulso!',
+              '🧩 ¡Revisar la base es de valientes!','🌱 ¡Cada paso atrás es una lección disfrazada!'],
+  };
+
+  function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function showMessage(pool) {
+    const el = document.getElementById('celebracion-msg');
+    el.textContent = rand(pool);
+    el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 3200);
+  }
+
+  /* ── Fuegos artificiales ── */
+  function launchFireworks() {
+    const canvas = document.getElementById('fireworks-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    canvas.style.display = 'block';
+    const colors = ['#7c3aed','#06b6d4','#f59e0b','#22c55e','#f97316','#ec4899','#fff'];
+    const particles = [];
+    function burst(x, y) {
+      for (let i = 0; i < 90; i++) {
+        const a = (Math.PI * 2 * i) / 90, s = Math.random() * 7 + 2;
+        particles.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+          alpha: 1, color: colors[Math.floor(Math.random()*colors.length)], size: Math.random()*4+1.5 });
+      }
+    }
+    [[0.25,0.3],[0.75,0.25],[0.5,0.45],[0.15,0.55],[0.85,0.5]]
+      .forEach(([px,py],i) => setTimeout(() => burst(px*canvas.width, py*canvas.height), i*280));
+    function animate() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.vx*=0.99; p.alpha-=0.014;
+        ctx.globalAlpha=Math.max(0,p.alpha); ctx.fillStyle=p.color;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); });
+      ctx.globalAlpha=1;
+      for(let i=particles.length-1;i>=0;i--) if(particles[i].alpha<=0) particles.splice(i,1);
+      if(particles.length>0) requestAnimationFrame(animate); else canvas.style.display='none';
+    }
+    animate();
+  }
+
+  const nuevo  = params.get('nuevo');
+  const cambio = params.get('cambio');
+
+  if (nuevo === 'logro' || nuevo === 'proceso') {
+    if (!params.get('completado')) launchFireworks();
+    showMessage(POOL[nuevo]);
+    if (!params.get('completado')) window.history.replaceState({}, '', '/');
+  } else if (cambio === 'subio') {
+    if (!params.get('completado')) launchFireworks();
+    showMessage(POOL.subio);
+    if (!params.get('completado')) window.history.replaceState({}, '', '/');
+  } else if (cambio === 'bajo') {
+    showMessage(POOL.bajo);
+    window.history.replaceState({}, '', '/');
+  }
+</script>
+</body>
+</html>
