@@ -1,10 +1,11 @@
 <div class="wall">
   {% if logros %}
     {% for logro in logros %}
-    <div class="card {% if logro.tipo == 'proceso' %}card-proceso{% endif %}">
+    {% set es_avanzado = logro.tipo == 'proceso' and logro.nivel == 'avanzado' %}
+    <div class="card {% if logro.tipo == 'proceso' and not es_avanzado %}card-proceso{% endif %}">
       <div class="card-top">
-        <span class="card-icon">{% if logro.tipo == 'proceso' %}⚙️{% else %}🏆{% endif %}</span>
-        {% if logro.tipo == 'proceso' %}
+        <span class="card-icon">{% if logro.tipo == 'proceso' and not es_avanzado %}⚙️{% else %}🏆{% endif %}</span>
+        {% if logro.tipo == 'proceso' and not es_avanzado %}
         <span class="nivel-badge nivel-{{ logro.nivel }}">{{ logro.nivel | replace('-', ' ') | title }}</span>
         {% endif %}
       </div>
