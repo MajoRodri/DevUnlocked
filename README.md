@@ -130,9 +130,9 @@ DevUnlocked/
 
 ---
 
-### Opción 1 — Solo comandos (recomendado)
+### Opción 1 — Solo comandos (sin archivos)
 
-Las imágenes están publicadas en Docker Hub. No necesitas clonar el repositorio.
+Las imágenes están publicadas en Docker Hub. No necesitas clonar el repositorio ni tener ningún archivo.
 
 ```bash
 docker network create devunlocked-net
@@ -140,11 +140,11 @@ docker network create devunlocked-net
 docker run -d --name redis --network devunlocked-net redis:7-alpine
 
 docker run -d --name web --network devunlocked-net \
-  -e REDIS_HOST=redis \
-  -e REDIS_PORT=6379 \
+  -e REDIS_HOST=redis -e REDIS_PORT=6379 \
   majorodri/devunlocked-web:v1
 
-docker run -d --name nginx --network devunlocked-net -p 80:80 majorodri/devunlocked-nginx:v1
+docker run -d --name nginx --network devunlocked-net -p 80:80 \
+  majorodri/devunlocked-nginx:v1
 ```
 
 Visita [http://localhost](http://localhost).
@@ -157,11 +157,31 @@ docker rm nginx web redis
 docker network rm devunlocked-net
 ```
 
-> Para borrar los datos de Redis: `docker rm -v redis`
+---
+
+### Opción 2 — Con docker-compose.yml
+
+Descarga solo el `docker-compose.yml` del repositorio y ejecuta:
+
+```bash
+docker compose up
+```
+
+Docker descarga las imágenes de Docker Hub automáticamente.
+
+Visita [http://localhost](http://localhost).
+
+**Para detener:**
+
+```bash
+docker compose down
+```
+
+> Para borrar datos: `docker compose down -v`
 
 ---
 
-### Opción 2 — Clonar el repositorio
+### Opción 3 — Clonar el repositorio
 
 ```bash
 git clone https://github.com/MajoRodri/DevUnlocked.git

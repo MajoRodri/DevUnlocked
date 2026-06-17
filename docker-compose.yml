@@ -11,14 +11,17 @@ services:
 
   web:
     build: ./app
-    env_file:
-      - .env
+    image: majorodri/devunlocked-web:v1
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       redis:
         condition: service_healthy
 
   nginx:
     build: ./nginx
+    image: majorodri/devunlocked-nginx:v1
     ports:
       - "80:80"
     depends_on:
