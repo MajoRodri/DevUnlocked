@@ -110,6 +110,7 @@ DevUnlocked/
 │           ├── modal.js        # apertura del modal de elección de mascota
 │           └── tabs.js         # cambio entre pestaña "Logro" y "En proceso"
 ├── nginx/
+│   ├── Dockerfile              # imagen nginx con la config incluida
 │   └── nginx.conf              # proxy inverso apuntando a Flask en el puerto 5000
 ├── .env                        # variables de entorno (REDIS_HOST, REDIS_PORT)
 ├── docker-compose.yml          # orquestación de los tres servicios
@@ -122,120 +123,53 @@ DevUnlocked/
 
 ## Instalación
 
-### Requisitos previos
+### Requisitos
 
-<details>
-<summary>Docker (recomendado)</summary>
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) versión 24 o superior
-- [Docker Compose](https://docs.docker.com/compose/) (incluido en Docker Desktop)
+- [Docker](https://www.docker.com/products/docker-desktop/) versión 24 o superior
 - Puerto **80** disponible en tu máquina
-
-</details>
-
-<details>
-<summary>Local sin Docker</summary>
-
-- Python 3.11 o superior
-- Redis 7 instalado y corriendo en `localhost:6379`
-- Puerto **5000** disponible
-
-</details>
 
 ---
 
-<details>
-<summary><strong>Opción 1 — Docker Hub (sin clonar el repo)</strong></summary>
+### Opción 1 — Solo comandos (recomendado)
 
-La imagen está publicada en Docker Hub como `majorodri/devunlocked`. No necesitas el código fuente.
-
-**1. Crea un archivo `docker-compose.yml`:**
-
-```yaml
-services:
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - datos_redis:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  web:
-    image: majorodri/devunlocked:v1
-    env_file:
-      - .env
-    depends_on:
-      redis:
-        condition: service_healthy
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - web
-
-volumes:
-  datos_redis:
-    driver: local
-```
-
-**2. Crea el archivo `.env`:**
-
-```env
-REDIS_HOST=redis
-REDIS_PORT=6379
-```
-
-**3. Levanta los contenedores:**
+Las imágenes están publicadas en Docker Hub. No necesitas clonar el repositorio.
 
 ```bash
-docker compose up
+docker network create devunlocked-net
+
+docker run -d --name redis --network devunlocked-net redis:7-alpine
+
+docker run -d --name web --network devunlocked-net \
+  -e REDIS_HOST=redis \
+  -e REDIS_PORT=6379 \
+  majorodri/devunlocked-web:v1
+
+docker run -d --name nginx --network devunlocked-net -p 80:80 majorodri/devunlocked-nginx:v1
 ```
 
-**4.** Visita [http://localhost](http://localhost).
+Visita [http://localhost](http://localhost).
 
 **Para detener:**
 
 ```bash
-docker compose down
+docker stop nginx web redis
+docker rm nginx web redis
+docker network rm devunlocked-net
 ```
 
-> Los datos persisten entre reinicios. Para borrarlos: `docker compose down -v`
+> Para borrar los datos de Redis: `docker rm -v redis`
 
-</details>
+---
 
-<details>
-<summary><strong>Opción 2 — Docker desde el código fuente</strong></summary>
-
-**1. Clona el repositorio:**
+### Opción 2 — Clonar el repositorio
 
 ```bash
 git clone https://github.com/MajoRodri/DevUnlocked.git
 cd DevUnlocked
-```
-
-**2. Verifica el archivo `.env`** en la raíz:
-
-```env
-REDIS_HOST=redis
-REDIS_PORT=6379
-```
-
-> `redis` es el nombre del servicio interno de Docker, no `localhost`.
-
-**3. Construye y levanta:**
-
-```bash
 docker compose up --build
 ```
 
-**4.** Visita [http://localhost](http://localhost).
+Visita [http://localhost](http://localhost).
 
 **Para detener:**
 
@@ -244,70 +178,6 @@ docker compose down
 ```
 
 > Para borrar datos: `docker compose down -v`
-
-</details>
-
-<details>
-<summary><strong>Opción 3 — Ejecución local sin Docker</strong></summary>
-
-**1. Clona el repositorio:**
-
-```bash
-git clone https://github.com/MajoRodri/DevUnlocked.git
-cd DevUnlocked
-```
-
-**2. Instala y levanta Redis localmente:**
-
-macOS:
-```bash
-brew install redis && brew services start redis
-```
-
-Ubuntu/Debian:
-```bash
-sudo apt install redis-server && sudo systemctl start redis
-```
-
-Windows: usa [Redis para Windows](https://github.com/microsoftarchive/redis/releases) o WSL.
-
-Verifica: `redis-cli ping` → debe responder `PONG`.
-
-**3. Crea y activa el entorno virtual:**
-
-```bash
-python -m venv venv
-
-# macOS / Linux:
-source venv/bin/activate
-
-# Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-```
-
-**4. Instala las dependencias:**
-
-```bash
-pip install -r requirements.txt
-```
-
-**5. Configura `.env`:**
-
-```env
-REDIS_HOST=localhost
-REDIS_PORT=6379
-```
-
-**6. Corre la aplicación:**
-
-```bash
-cd app
-python app.py
-```
-
-**7.** Visita [http://localhost:5000](http://localhost:5000).
-
-</details>
 
 ---
 
@@ -462,26 +332,6 @@ DEL mascota_progreso
 ```
 
 Recarga la página — el modal de elección aparecerá de nuevo.
-
-</details>
-
-<details>
-<summary>Windows: <code>Activate.ps1 cannot be loaded because running scripts is disabled</code></summary>
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\venv\Scripts\Activate.ps1
-```
-
-</details>
-
-<details>
-<summary><code>ModuleNotFoundError: No module named 'flask'</code></summary>
-
-El entorno virtual no está activo o las dependencias no están instaladas.
-
-1. Activa el venv (debes ver `(venv)` al inicio de la línea).
-2. Ejecuta: `pip install -r requirements.txt`
 
 </details>
 
