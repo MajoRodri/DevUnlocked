@@ -10,7 +10,8 @@ services:
       retries: 5
 
   web:
-    build: ./app
+    build:
+      context: ./app
     image: majorodri/devunlocked-web:v1
     environment:
       - REDIS_HOST=redis
@@ -20,7 +21,8 @@ services:
         condition: service_healthy
 
   nginx:
-    build: ./nginx
+    build:
+      context: ./nginx
     image: majorodri/devunlocked-nginx:v1
     ports:
       - "80:80"
